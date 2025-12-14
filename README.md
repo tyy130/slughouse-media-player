@@ -182,6 +182,58 @@ The Slughouse theme uses:
 - Secondary: `#16213e` (Navy blue)
 - Accent: `#0f3460` (Deep blue)
 
+## Usage Guide
+
+### For Listeners (Public View)
+
+1. Visit the application URL
+2. Browse the playlist of available tracks
+3. Click on any track to play it
+4. Use the media player controls:
+   - **Play/Pause**: Toggle playback
+   - **Previous/Next**: Navigate between tracks
+   - **Progress bar**: Seek to any position in the track
+5. View track artwork, title, artist, and album information
+
+### For Admins
+
+1. **Login**:
+   - Click "Admin Login" button at the bottom of the player
+   - Enter your admin credentials (default: admin/admin123)
+
+2. **Upload New Tracks**:
+   - Click "+ Add Track" button
+   - Fill in track details (Title, Artist, Album)
+   - Select audio file (required)
+   - Optionally select artwork image
+   - Click "Upload Track"
+
+3. **Edit Tracks**:
+   - Click "Edit" button on any track
+   - Update track details or replace artwork
+   - Click "Save Changes"
+
+4. **Delete Tracks**:
+   - Click "Delete" button on any track
+   - Confirm deletion (this removes the track and its files permanently)
+
+5. **Reorder Tracks**:
+   - Use the ▲ and ▼ buttons next to each track
+   - Changes are saved immediately
+   - Track order is reflected in the public player
+
+6. **Logout**:
+   - Click "Logout" button in the header to return to public view
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for detailed security information including:
+- Authentication & authorization
+- Rate limiting
+- File upload security
+- Input validation
+- Production recommendations
+
 ## License
 
 ISC
