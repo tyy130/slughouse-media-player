@@ -93,7 +93,7 @@ const upload = multer({
 });
 
 // Public routes - Get all tracks
-app.get('/api/tracks', async (req, res) => {
+app.get('/api/tracks', generalLimiter, async (req, res) => {
   try {
     const [tracks] = await db.query('SELECT * FROM tracks ORDER BY track_order ASC, created_at DESC');
     res.json(tracks);
@@ -131,7 +131,7 @@ app.post('/api/admin/login', authLimiter, async (req, res) => {
 });
 
 // Protected admin routes
-app.post('/api/admin/tracks', authMiddleware, uploadLimiter, upload.fields([
+app.post('/api/admin/tracks', authMiddleware, uploadLimiter, generalLimiter, upload.fields([
   { name: 'track', maxCount: 1 },
   { name: 'artwork', maxCount: 1 }
 ]), async (req, res) => {
@@ -156,7 +156,7 @@ app.post('/api/admin/tracks', authMiddleware, uploadLimiter, upload.fields([
   }
 });
 
-app.put('/api/admin/tracks/:id', authMiddleware, upload.fields([
+app.put('/api/admin/tracks/:id', authMiddleware, generalLimiter, upload.fields([
   { name: 'artwork', maxCount: 1 }
 ]), async (req, res) => {
   try {
@@ -200,7 +200,7 @@ app.put('/api/admin/tracks/:id', authMiddleware, upload.fields([
   }
 });
 
-app.delete('/api/admin/tracks/:id', authMiddleware, async (req, res) => {
+app.delete('/api/admin/tracks/:id', authMiddleware, generalLimiter, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -242,7 +242,7 @@ app.delete('/api/admin/tracks/:id', authMiddleware, async (req, res) => {
   }
 });
 
-app.put('/api/admin/tracks/reorder', authMiddleware, async (req, res) => {
+app.put('/api/admin/tracks/reorder', authMiddleware, generalLimiter, async (req, res) => {
   try {
     const { tracks } = req.body;
     
