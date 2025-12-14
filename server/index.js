@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const fs = require('fs').promises;
 const fsSync = require('fs');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const db = require('./db');
@@ -22,10 +23,30 @@ uploadDirs.forEach(dir => {
   }
 });
 
+// Rate limiters
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login attempts per windowMs
+  message: 'Too many login attempts, please try again later.'
+});
+
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 20, // Limit uploads to 20 per hour
+  message: 'Too many uploads, please try again later.'
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/api/', generalLimiter); // Apply rate limiting to all API routes
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -83,7 +104,7 @@ app.get('/api/tracks', async (req, res) => {
 });
 
 // Admin login
-app.post('/api/admin/login', async (req, res) => {
+app.post('/api/admin/login', authLimiter, async (req, res) => {
   const { username, password } = req.body;
   
   try {
@@ -110,7 +131,7 @@ app.post('/api/admin/login', async (req, res) => {
 });
 
 // Protected admin routes
-app.post('/api/admin/tracks', authMiddleware, upload.fields([
+app.post('/api/admin/tracks', authMiddleware, uploadLimiter, upload.fields([
   { name: 'track', maxCount: 1 },
   { name: 'artwork', maxCount: 1 }
 ]), async (req, res) => {

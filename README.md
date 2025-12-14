@@ -48,6 +48,8 @@ Slughouse media player to showcase audio projects released by Slughouse Records.
 
 4. **Configure Environment Variables**
    
+   **Server configuration:**
+   
    Copy the example env file and configure:
    ```bash
    cp .env.example .env
@@ -63,6 +65,19 @@ Slughouse media player to showcase audio projects released by Slughouse Records.
    
    JWT_SECRET=your-secret-key-change-this
    PORT=3001
+   ```
+   
+   **Client configuration (optional):**
+   
+   For production or custom API URL:
+   ```bash
+   cd client
+   cp .env.example .env
+   ```
+   
+   Edit `client/.env`:
+   ```
+   REACT_APP_API_URL=http://localhost:3001
    ```
 
 5. **Create upload directories**
