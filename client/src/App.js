@@ -3,6 +3,8 @@ import './App.css';
 import MediaPlayer from './components/MediaPlayer';
 import AdminPanel from './components/AdminPanel';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
 function App() {
   const [tracks, setTracks] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -17,7 +19,7 @@ function App() {
 
   const fetchTracks = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/tracks');
+      const response = await fetch(`${API_URL}/api/tracks`);
       const data = await response.json();
       setTracks(data);
     } catch (error) {
@@ -49,13 +51,14 @@ function App() {
       </header>
       
       {!isAdmin ? (
-        <MediaPlayer tracks={tracks} onLoginClick={() => setIsAdmin(true)} />
+        <MediaPlayer tracks={tracks} onLoginClick={() => setIsAdmin(true)} apiUrl={API_URL} />
       ) : (
         <AdminPanel 
           token={token} 
           onLogin={handleLogin}
           onLogout={handleLogout}
           onTracksUpdate={fetchTracks}
+          apiUrl={API_URL}
         />
       )}
     </div>

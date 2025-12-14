@@ -4,7 +4,8 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
-const fs = require('fs');
+const fs = require('fs').promises;
+const fsSync = require('fs');
 require('dotenv').config();
 
 const db = require('./db');
@@ -12,6 +13,14 @@ const authMiddleware = require('./auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Create upload directories if they don't exist
+const uploadDirs = ['uploads/tracks', 'uploads/artwork'];
+uploadDirs.forEach(dir => {
+  if (!fsSync.existsSync(dir)) {
+    fsSync.mkdirSync(dir, { recursive: true });
+  }
+});
 
 // Middleware
 app.use(cors());
@@ -33,8 +42,30 @@ const storage = multer.diskStorage({
   }
 });
 
+// File type validation
+const fileFilter = (req, file, cb) => {
+  if (file.fieldname === 'track') {
+    // Accept audio files
+    if (file.mimetype.startsWith('audio/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only audio files are allowed for tracks'), false);
+    }
+  } else if (file.fieldname === 'artwork') {
+    // Accept image files
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed for artwork'), false);
+    }
+  } else {
+    cb(null, true);
+  }
+};
+
 const upload = multer({ 
   storage: storage,
+  fileFilter: fileFilter,
   limits: {
     fileSize: 50 * 1024 * 1024 // 50MB limit
   }
@@ -124,8 +155,13 @@ app.put('/api/admin/tracks/:id', authMiddleware, upload.fields([
     
     if (artworkFile) {
       // Delete old artwork if it exists
-      if (existingTracks[0].artwork_path && fs.existsSync(existingTracks[0].artwork_path)) {
-        fs.unlinkSync(existingTracks[0].artwork_path);
+      if (existingTracks[0].artwork_path) {
+        try {
+          await fs.access(existingTracks[0].artwork_path);
+          await fs.unlink(existingTracks[0].artwork_path);
+        } catch (err) {
+          // File doesn't exist, ignore error
+        }
       }
       query += ', artwork_path = ?';
       params.push(artworkFile.path);
@@ -156,13 +192,24 @@ app.delete('/api/admin/tracks/:id', authMiddleware, async (req, res) => {
     
     const track = tracks[0];
     
-    // Delete files
-    if (track.file_path && fs.existsSync(track.file_path)) {
-      fs.unlinkSync(track.file_path);
+    // Delete files asynchronously
+    const deletePromises = [];
+    if (track.file_path) {
+      deletePromises.push(
+        fs.access(track.file_path)
+          .then(() => fs.unlink(track.file_path))
+          .catch(() => {}) // Ignore if file doesn't exist
+      );
     }
-    if (track.artwork_path && fs.existsSync(track.artwork_path)) {
-      fs.unlinkSync(track.artwork_path);
+    if (track.artwork_path) {
+      deletePromises.push(
+        fs.access(track.artwork_path)
+          .then(() => fs.unlink(track.artwork_path))
+          .catch(() => {}) // Ignore if file doesn't exist
+      );
     }
+    
+    await Promise.all(deletePromises);
     
     // Delete from database
     await db.query('DELETE FROM tracks WHERE id = ?', [id]);

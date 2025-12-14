@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './MediaPlayer.css';
 
-function MediaPlayer({ tracks, onLoginClick }) {
+function MediaPlayer({ tracks, onLoginClick, apiUrl }) {
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -86,7 +86,7 @@ function MediaPlayer({ tracks, onLoginClick }) {
         <div className="artwork-container">
           {currentTrack.artwork_path ? (
             <img 
-              src={`http://localhost:3001/${currentTrack.artwork_path}`} 
+              src={`${apiUrl}/${currentTrack.artwork_path}`} 
               alt={currentTrack.title}
               className="artwork"
             />
@@ -138,7 +138,7 @@ function MediaPlayer({ tracks, onLoginClick }) {
 
         <audio
           ref={audioRef}
-          src={currentTrack.file_path ? `http://localhost:3001/${currentTrack.file_path}` : ''}
+          src={currentTrack.file_path ? `${apiUrl}/${currentTrack.file_path}` : ''}
           onTimeUpdate={handleTimeUpdate}
           onLoadedMetadata={handleLoadedMetadata}
           onEnded={handleTrackEnd}

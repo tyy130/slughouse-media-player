@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './AdminPanel.css';
 
-function AdminPanel({ token, onLogin, onLogout, onTracksUpdate }) {
+function AdminPanel({ token, onLogin, onLogout, onTracksUpdate, apiUrl }) {
   const [isLoggedIn, setIsLoggedIn] = useState(!!token);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -26,7 +26,7 @@ function AdminPanel({ token, onLogin, onLogout, onTracksUpdate }) {
 
   const fetchTracks = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/tracks');
+      const response = await fetch(`${apiUrl}/api/tracks`);
       const data = await response.json();
       setTracks(data);
     } catch (error) {
@@ -39,7 +39,7 @@ function AdminPanel({ token, onLogin, onLogout, onTracksUpdate }) {
     setError('');
     
     try {
-      const response = await fetch('http://localhost:3001/api/admin/login', {
+      const response = await fetch(`${apiUrl}/api/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ function AdminPanel({ token, onLogin, onLogout, onTracksUpdate }) {
     if (artworkFile) formData.append('artwork', artworkFile);
 
     try {
-      const response = await fetch('http://localhost:3001/api/admin/tracks', {
+      const response = await fetch(`${apiUrl}/api/admin/tracks`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -102,7 +102,7 @@ function AdminPanel({ token, onLogin, onLogout, onTracksUpdate }) {
     if (artworkFile) formData.append('artwork', artworkFile);
 
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/tracks/${editingTrack.id}`, {
+      const response = await fetch(`${apiUrl}/api/admin/tracks/${editingTrack.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -127,7 +127,7 @@ function AdminPanel({ token, onLogin, onLogout, onTracksUpdate }) {
     if (!window.confirm('Are you sure you want to delete this track?')) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/tracks/${id}`, {
+      const response = await fetch(`${apiUrl}/api/admin/tracks/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -154,7 +154,7 @@ function AdminPanel({ token, onLogin, onLogout, onTracksUpdate }) {
     [newTracks[index], newTracks[newIndex]] = [newTracks[newIndex], newTracks[index]];
 
     try {
-      const response = await fetch('http://localhost:3001/api/admin/tracks/reorder', {
+      const response = await fetch(`${apiUrl}/api/admin/tracks/reorder`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
