@@ -97,7 +97,7 @@ function AdminPanel({ token, onLogin, onLogout, onTracksUpdate, apiUrl }) {
       }
     } catch (error) {
       console.error('Upload request error:', error);
-      setError(`Network error: ${error.message}. Confirm the API URL (${apiUrl}) and backend are reachable.`);
+      setError(`Network error: ${error.message}. Attempted to POST to: ${apiUrl}/api/admin/tracks. Check if backend is down or CORS blocking.`);
     }
   };
 
