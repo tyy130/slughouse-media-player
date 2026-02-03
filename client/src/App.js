@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import { Analytics } from '@vercel/analytics/react';
 import MediaPlayer from './components/MediaPlayer';
 import AdminPanel from './components/AdminPanel';
 
@@ -63,6 +64,7 @@ function App() {
           apiUrl={API_URL}
         />
       )}
+      <Analytics />
     </div>
   );
 }
