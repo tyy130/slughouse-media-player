@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/slughouse-media-player/static/css/main.6c66355c.css",
+    "main.js": "/slughouse-media-player/static/js/main.55fb3a2e.js",
+    "index.html": "/slughouse-media-player/index.html",
+    "main.6c66355c.css.map": "/slughouse-media-player/static/css/main.6c66355c.css.map",
+    "main.55fb3a2e.js.map": "/slughouse-media-player/static/js/main.55fb3a2e.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.6c66355c.css",
+    "static/js/main.55fb3a2e.js"
+  ]
+}
