@@ -3,9 +3,9 @@ import './App.css';
 import MediaPlayer from './components/MediaPlayer';
 import AdminPanel from './components/AdminPanel';
 
-// Use environment variable if present, otherwise default to location.origin in production or localhost in dev
+// Use environment variable if present, otherwise default to playback.slughouse.com for prod
 const API_URL = process.env.REACT_APP_API_URL || 
-  (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
+  (window.location.hostname === 'localhost' ? 'http://localhost:3001' : 'https://playback.slughouse.com');
 
 function App() {
   const [tracks, setTracks] = useState([]);
