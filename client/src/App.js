@@ -3,7 +3,9 @@ import './App.css';
 import MediaPlayer from './components/MediaPlayer';
 import AdminPanel from './components/AdminPanel';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+// Use environment variable if present, otherwise default to location.origin in production or localhost in dev
+const API_URL = process.env.REACT_APP_API_URL || 
+  (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
 
 function App() {
   const [tracks, setTracks] = useState([]);

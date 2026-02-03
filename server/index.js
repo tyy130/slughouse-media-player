@@ -51,11 +51,9 @@ app.use('/api/', generalLimiter); // Apply rate limiting to all API routes
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    if (file.fieldname === 'track') {
-      cb(null, 'uploads/tracks/');
-    } else if (file.fieldname === 'artwork') {
-      cb(null, 'uploads/artwork/');
-    }
+    const dest = file.fieldname === 'track' ? 'uploads/tracks/' : 'uploads/artwork/';
+    console.log(`Multer: Uploading ${file.originalname} to ${dest}`);
+    cb(null, dest);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -89,6 +87,15 @@ const upload = multer({
   fileFilter: fileFilter,
   limits: {
     fileSize: 50 * 1024 * 1024 // 50MB limit
+  }
+});
+
+app.get('/api/health', generalLimiter, async (req, res) => {
+  try {
+    await db.query('SELECT 1');
+    res.json({ status: 'ok', database: 'connected', version: '1.0.1' });
+  } catch (err) {
+    res.status(500).json({ status: 'error', database: 'disconnected', error: err.message });
   }
 });
 
@@ -152,7 +159,7 @@ app.post('/api/admin/tracks', authMiddleware, uploadLimiter, generalLimiter, upl
     res.json({ id: result.insertId, message: 'Track uploaded successfully' });
   } catch (error) {
     console.error('Error uploading track:', error);
-    res.status(500).json({ error: 'Failed to upload track' });
+    res.status(500).json({ error: `Upload failed: ${error.message}` });
   }
 });
 
@@ -196,7 +203,7 @@ app.put('/api/admin/tracks/:id', authMiddleware, generalLimiter, upload.fields([
     res.json({ message: 'Track updated successfully' });
   } catch (error) {
     console.error('Error updating track:', error);
-    res.status(500).json({ error: 'Failed to update track' });
+    res.status(500).json({ error: `Update failed: ${error.message}` });
   }
 });
 
@@ -271,6 +278,37 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    console.error('Multer error:', err);
+    return res.status(400).json({ error: `File upload error: ${err.message}` });
+  }
+  console.error('Server error:', err);
+  res.status(500).json({ error: `Server error: ${err.message || 'Internal Server Error'}` });
 });
+
+// Test database connection and start server
+const startServer = async () => {
+  try {
+    await db.query('SELECT 1');
+    console.log('Database connected successfully');
+    
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('CRITICAL: Database connection failed. Server not started.');
+    console.error(err);
+    // Exit if in production, or just log in dev
+    if (process.env.NODE_ENV === 'production') {
+      process.exit(1);
+    } else {
+      // Still start server in dev to allow debugging via API
+      app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT} (WARNING: DB disconnected)`);
+      });
+    }
+  }
+};
+
+startServer();

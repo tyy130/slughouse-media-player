@@ -27,10 +27,12 @@ function AdminPanel({ token, onLogin, onLogout, onTracksUpdate, apiUrl }) {
   const fetchTracks = async () => {
     try {
       const response = await fetch(`${apiUrl}/api/tracks`);
+      if (!response.ok) throw new Error(`Server returned ${response.status}`);
       const data = await response.json();
       setTracks(data);
     } catch (error) {
       console.error('Error fetching tracks:', error);
+      setError(`Connection error: ${error.message}. Confirm the API URL (${apiUrl}) is correct and the backend is reachable.`);
     }
   };
 
@@ -85,10 +87,17 @@ function AdminPanel({ token, onLogin, onLogout, onTracksUpdate, apiUrl }) {
         fetchTracks();
         onTracksUpdate();
       } else {
-        setError('Failed to upload track');
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          const errorData = await response.json();
+          setError(`Upload failed: ${errorData.error || response.statusText}`);
+        } else {
+          setError(`Upload failed with status: ${response.status}. Please check backend logs and connectivity.`);
+        }
       }
     } catch (error) {
-      setError('Upload failed. Please try again.');
+      console.error('Upload request error:', error);
+      setError(`Network error: ${error.message}. Confirm the API URL (${apiUrl}) and backend are reachable.`);
     }
   };
 
@@ -116,10 +125,11 @@ function AdminPanel({ token, onLogin, onLogout, onTracksUpdate, apiUrl }) {
         fetchTracks();
         onTracksUpdate();
       } else {
-        setError('Failed to update track');
+        const errorData = await response.json().catch(() => ({}));
+        setError(`Update failed: ${errorData.error || response.statusText}`);
       }
     } catch (error) {
-      setError('Update failed. Please try again.');
+      setError(`Network error: ${error.message}. Confirm the API URL and backend are reachable.`);
     }
   };
 
@@ -138,10 +148,11 @@ function AdminPanel({ token, onLogin, onLogout, onTracksUpdate, apiUrl }) {
         fetchTracks();
         onTracksUpdate();
       } else {
-        setError('Failed to delete track');
+        const errorData = await response.json().catch(() => ({}));
+        setError(`Delete failed: ${errorData.error || response.statusText}`);
       }
     } catch (error) {
-      setError('Delete failed. Please try again.');
+      setError(`Network error: ${error.message}. Confirm the API URL and backend are reachable.`);
     }
   };
 
@@ -166,9 +177,12 @@ function AdminPanel({ token, onLogin, onLogout, onTracksUpdate, apiUrl }) {
       if (response.ok) {
         setTracks(newTracks);
         onTracksUpdate();
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setError(`Reorder failed: ${errorData.error || response.statusText}`);
       }
     } catch (error) {
-      setError('Failed to reorder tracks');
+      setError(`Network error: ${error.message}. Confirm the API URL and backend are reachable.`);
     }
   };
 
